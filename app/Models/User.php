@@ -52,7 +52,7 @@ class User extends Authenticatable
         return $this->hasMany(Message::class, 'from', 'id');
     }
 
-    public function message()
+    public function messages()
     {
         return $this->hasMany(Message::class, 'from');
     }

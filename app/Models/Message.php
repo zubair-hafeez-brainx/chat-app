@@ -20,7 +20,8 @@ class Message extends Model
         'from',
         'messagable_type',
         'messagable_id',
-        'message'
+        'message',
+        'file'
     ];
 
     public function messagable()

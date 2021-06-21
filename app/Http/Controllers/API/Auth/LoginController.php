@@ -32,4 +32,14 @@ class LoginController extends Controller
 
         return response()->json($data, 200);
     }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function currentUser()
+    {
+        $user = auth()->user();
+
+        return response()->json($user, 200);
+    }
 }
