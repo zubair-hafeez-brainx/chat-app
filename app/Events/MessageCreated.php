@@ -35,10 +35,6 @@ class MessageCreated implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        if ($this->type == 'user') {
-            return [$this->type . '_' . $this->data['messagable_id']];
-        } else {
-            return new Channel('group_' . $this->type);
-        }
+        return [$this->type . '_' . $this->data['messagable_id']];
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Group extends Model
 {
@@ -14,8 +14,17 @@ class Group extends Model
         'name'
     ];
 
+    public function messagable(){
+        return $this->morphMany(Message::class, 'messagable');
+    }
+
     public function user()
     {
-        return $this->hasMany(User::class, 'from');
+        return $this->belongsTo(User::class, 'from');
+    }
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class,'group_users','group_id','user_id');
     }
 }

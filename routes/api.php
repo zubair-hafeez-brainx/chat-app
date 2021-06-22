@@ -34,10 +34,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('message')->group(function () {
         Route::post('/', [MessageController::class, 'create']);
+        Route::post('/group', [MessageController::class, 'groupMessage']);
         Route::get('/friends', [MessageController::class, 'friendUsers']);
         Route::get('/user-chat', [MessageController::class, 'usersChat']);
         Route::get('/search/user', [MessageController::class, 'searchUser']);
         Route::get('/chat-users', [MessageController::class, 'chatedUsers']);
         Route::get('/group-chat', [MessageController::class, 'groupChat']);
+        Route::get('/groups', [MessageController::class, 'userGroups']);
     });
 });

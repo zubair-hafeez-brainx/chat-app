@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Events\MessageCreated;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Group;
+use App\Models\GroupUser;
 use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +15,6 @@ class MessageController extends Controller
 {
     public function create(Request $request)
     {
-        \Log::debug($request->all());
         $authUser = auth()->user();
         $request->validate([
             'to' => 'required|integer|exists:users,id',
@@ -81,5 +82,57 @@ class MessageController extends Controller
         $collection = collect($messages)->sortByDesc('created_at')->values();
 
         return response()->json($collection, 200);
+    }
+
+    public function userGroups()
+    {
+        $authUser = auth()->user();
+        $groups = $authUser->groups()->with('members')->get();
+
+        return response()->json($groups, 200);
+    }
+
+    public function groupMessage(Request $request)
+    {
+        $authUser = auth()->user();
+        $request->validate([
+            'group_id' => 'required|integer',
+            'message' => 'sometimes',
+            'file' => 'sometimes'
+        ]);
+
+        $group = Group::find($request->get('group_id'));
+        if ($request->hasFile('file')) {
+            $url = $request->file('file')->store('chat-messages', 'public');
+            $file = env('APP_URL') . '/' . Storage::url($url);
+        }
+
+        $message = $group->messagable()->create(['from' => $authUser->id,
+            'message' => $request->get('message') ?? null,
+            'file' => $file ?? null,
+        ]);
+
+        $data['group'] = $authUser->only(['id', 'name', 'email']);
+        $data['message'] = $message->message;
+        $data['file'] = $message->file;
+        $data['messagable_id'] = $group->id;
+
+        event(new MessageCreated('group', $data));
+
+        return response()->json($message->only([
+            'id', 'messagable_id', 'from', 'message', 'file'
+        ]), 201);
+    }
+
+    public function groupChat(Request $request)
+    {
+        $request->validate([
+            "group_id" => "required|integer|exists:users,id"
+        ]);
+
+        $group = Group::find($request->get('group_id'));
+        $messages = $group->messagable()->orderBy('created_at', 'desc')->with('user')->get();
+
+        return response()->json($messages, 200);
     }
 }
